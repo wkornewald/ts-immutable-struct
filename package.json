@@ -1,0 +1,46 @@
+{
+  "name": "ts-immutable-struct",
+  "version": "0.7.3",
+  "author": {
+    "name": "Waldemar Kornewald",
+    "url": "https://github.com/wkornewald"
+  },
+  "keywords": [
+    "cursor",
+    "immutable",
+    "immstruct",
+    "redux",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wkornewald/ts-immutable-struct.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^19.2.3",
+    "jest": "^20.0.4",
+    "ts-jest": "^20.0.5",
+    "ts-node": "^3.0.4",
+    "tslint": "^5.3.2",
+    "typescript": "^2.3.4"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ]
+  }
+}
