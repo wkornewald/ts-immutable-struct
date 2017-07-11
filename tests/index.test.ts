@@ -1,5 +1,5 @@
 import * as immutable from 'immutable'
-import {List, Map, Struct, ChangeReason, ObjectRef} from '..'
+import {List, Map, Struct, ObjectRef, UserEvent} from '..'
 
 function baseData() {
   return Struct({
@@ -42,44 +42,40 @@ test('Struct type inference and accessors', () => {
   type DataType = ObjectRef<typeof data.__$typespec__>
   let oldVal: DataType = data
   let newVal: DataType = data
-  let event: ChangeReason = new ChangeReason()
-  data.observe((_oldVal, _newVal, _event) => {
+  let event: UserEvent | undefined
+  data.observe((_event, _oldVal, _newVal) => {
+    event = _event
     oldVal = _oldVal
     newVal = _newVal
-    event = _event
   })
 
-  data.notify(new ChangeReason(new Event('Tst')))
-  expect(event.event && event.event.type).toBe('Tst')
-  expect(event.wasUser).toBe(true)
+  data.notify(new Event('Tst'))
+  expect(event && event.type).toBe('Tst')
 
   num = data.get('a').deref()
   expect(num).toBe(5)
-  num = data.get('a').val(10, new ChangeReason()).deref()
+  num = data.get('a').val(10).deref()
   expect(num).toBe(10)
   expect(oldVal.get('a').deref()).toBe(5)
   expect(newVal.get('a').deref()).toBe(10)
   expect(newVal).toBe(data)
-  expect(event.wasUser).toBe(false)
-  expect(event.event).toBe(undefined)
+  expect(event).toBeUndefined()
   num = data.get('a').deref()
   expect(num).toBe(10)
-  num = data.get('a').update(x => x - 5, new ChangeReason(undefined, true)).deref()
-  expect(event.wasUser).toBe(true)
+  num = data.get('a').update(x => x - 5).deref()
   expect(num).toBe(5)
 
   str = data.get('b').deref()
   expect(str).toBe('hey')
-  str = data.get('b').update(x => x + ' John', new ChangeReason(new Event('Tst'))).deref()
+  str = data.get('b').update(x => x + ' John', new Event('Tst')).deref()
   expect(str).toBe('hey John')
-  expect(event.event && event.event.type).toBe('Tst')
-  expect(event.wasUser).toBe(true)
+  expect(event && event.type).toBe('Tst')
 
   let nstr = data.get('c').deref()
   expect(nstr).toBe(null)
-  nstr = data.get('c').val(null, new ChangeReason()).deref()
+  nstr = data.get('c').val(null).deref()
   expect(nstr).toBe(null)
-  nstr = data.get('c').val('ahoy', new ChangeReason()).deref()
+  nstr = data.get('c').val('ahoy').deref()
   expect(nstr).toBe('ahoy')
   if (nstr !== null) {
     expect(nstr.startsWith('ah')).toBe(true)
@@ -99,7 +95,7 @@ test('Struct type inference and accessors', () => {
 
   str = data.get('g').get(0).get('b').get(0).deref()
   expect(str).toBe('d')
-  str = data.get('g').get(0).get('b').get(0).update(x => x + 'd', new ChangeReason()).deref()
+  str = data.get('g').get(0).get('b').get(0).update(x => x + 'd').deref()
   expect(str).toBe('dd')
 
   num = data.get('l').get(0).get(0).deref()

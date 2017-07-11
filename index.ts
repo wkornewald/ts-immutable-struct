@@ -53,26 +53,28 @@ export function List<T>(x: T[]): List<T[]> {
   return immutable.fromJS(x) as List<T[]>
 }
 
+export interface UserEvent {
+  readonly bubbles: boolean
+  readonly currentTarget: EventTarget
+  readonly cancelable: boolean
+  readonly defaultPrevented: boolean
+  readonly eventPhase: number
+  readonly isTrusted: boolean
+  preventDefault(): void
+  stopPropagation(): void
+  readonly target: EventTarget
+  readonly timeStamp: number
+  readonly type: string
+}
+
 // TODO: implement a more flexible observer system that can deal with nested events
 // TODO: allow batching mutations from different cursors and events
-export type Observer<T> = (oldVal: T, newVal: T, event: ChangeReason) => void
-
-export class ChangeReason {
-  readonly event?: Event
-  readonly wasUser: boolean
-  readonly source?: any
-
-  constructor(event?: Event, wasUser?: boolean, source?: any) {
-    this.event = event
-    this.wasUser = wasUser === undefined ? Boolean(event) : wasUser
-    this.source = source
-  }
-}
+export type Observer<T> = (event: UserEvent | undefined, oldVal: T, newVal: T) => void
 
 export interface BaseObservable<T> {
   observe(observer: Observer<T>): void
   unobserve(observer: Observer<T>): void
-  notify(event: ChangeReason, oldVal?: T, newVal?: T): void
+  notify(event: UserEvent, oldVal?: T, newVal?: T): void
 }
 
 export class Observable<T> implements BaseObservable<T> {
@@ -86,9 +88,9 @@ export class Observable<T> implements BaseObservable<T> {
     this._observers = this._observers.filter(o => o !== observer)
   }
 
-  notify(event: ChangeReason, oldVal: T, newVal: T) {
+  notify(event: UserEvent | undefined, oldVal: T, newVal: T) {
     for (let observer of this._observers) {
-      observer(oldVal, newVal, event)
+      observer(event, oldVal, newVal)
     }
   }
 }
@@ -114,7 +116,7 @@ class Root<S extends object> extends Observable<ObjectRef<S>> {
     return this._value
   }
 
-  set(value: immutable.Map<string, any>, event: ChangeReason) {
+  set(value: immutable.Map<string, any>, event?: UserEvent) {
     if (!this._owner) {
       throw Error('Owner not set')
     }
@@ -141,12 +143,12 @@ export class BaseRef<T> {
     return this.root.deref().getIn(this.path)
   }
 
-  val(v: any, event: ChangeReason): this {
+  val(v: any, event?: UserEvent): this {
     this.root.set(this.root.deref().updateIn(this.path, (val: any) => v), event)
     return this
   }
 
-  update(func: (v: any) => any, event: ChangeReason): this {
+  update(func: (v: any) => any, event?: UserEvent): this {
     this.root.set(this.root.deref().updateIn(this.path, func), event)
     return this
   }
@@ -155,9 +157,9 @@ export class BaseRef<T> {
 export interface LeafRef<T> extends BaseRef<T> {
   deref(): T
 
-  val(x: T, event: ChangeReason): this
+  val(x: T, event?: UserEvent): this
 
-  update(func: (v: T) => T, event: ChangeReason): this
+  update(func: (v: T) => T, event?: UserEvent): this
 }
 
 export class Ref<T> extends BaseRef<T> {
@@ -184,9 +186,9 @@ export interface ObjectRef<T extends object> extends Ref<T> {
 
   deref(): Map<T>
 
-  val(v: Map<T>, event: ChangeReason): this
+  val(v: Map<T>, event?: UserEvent): this
 
-  update(func: (v: Map<T>, event: ChangeReason) => Map<T>): this
+  update(func: (v: Map<T>, event?: UserEvent) => Map<T>): this
 }
 
 export interface ArrayRef<T> extends Ref<T> {
@@ -199,9 +201,9 @@ export interface ArrayRef<T> extends Ref<T> {
 
   deref(): List<T>
 
-  val(v: List<T>, event: ChangeReason): this
+  val(v: List<T>, event?: UserEvent): this
 
-  update(func: (v: List<T>, event: ChangeReason) => List<T>): this
+  update(func: (v: List<T>, event?: UserEvent) => List<T>): this
 }
 
 export interface ImmutableRef<T> extends Ref<T> {
@@ -214,10 +216,10 @@ export interface ImmutableRef<T> extends Ref<T> {
   deref(): T
 
   val<K, V, S extends immutable.Iterable<K, V>>(
-    this: ImmutableRef<S>, v: S, event: ChangeReason): this
+    this: ImmutableRef<S>, v: S, event?: UserEvent): this
 
   update<K, V, S extends immutable.Iterable<K, V>>(
-    this: ImmutableRef<S>, func: (v: S) => S, event: ChangeReason): this
+    this: ImmutableRef<S>, func: (v: S) => S, event?: UserEvent): this
 }
 
 export class RootRef<T extends object> extends Ref<T> implements BaseObservable<ObjectRef<T>> {
@@ -236,7 +238,7 @@ export class RootRef<T extends object> extends Ref<T> implements BaseObservable<
     this.root.unobserve(observer)
   }
 
-  notify(event: ChangeReason, oldVal: ObjectRef<T> = this as any, newVal: ObjectRef<T> = this as any) {
+  notify(event: UserEvent, oldVal: ObjectRef<T> = this as any, newVal: ObjectRef<T> = this as any) {
     this.root.notify(event, oldVal, newVal)
   }
 }
