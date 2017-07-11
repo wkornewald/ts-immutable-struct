@@ -4,7 +4,10 @@
 [![NPM downloads](https://img.shields.io/npm/dm/ts-immutable-struct.svg?style=flat)](https://npmjs.org/package/ts-immutable-struct)
 [![Build Status](https://travis-ci.org/wkornewald/ts-immutable-struct.svg?branch=master)](https://travis-ci.org/wkornewald/ts-immutable-struct)
 
-`ts-immutable-struct` is a TypeScript package for using `immutable.js` with type-safe cursors and a central event system.
+`ts-immutable-struct` is a TypeScript package for using `immutable.js` with type-safe cursors
+and simple event tracking to allow distinguishing between user-initiated state changes and
+internal state changes (e.g. to sync state).
+
 The emphasis here is on type-safety.
 
 This package is inspired by [immstruct](https://github.com/omniscientjs/immstruct), but uses references for everything.
@@ -36,7 +39,7 @@ let data = Struct({
   da: new Date(),
 })
 
-data.observe((oldVal, newVal, event) => {
+data.observe((event, oldVal, newVal) => {
   // Handle state changes (oldVal and newVal are both cursors, so you'll need to deref())
 })
 ```
