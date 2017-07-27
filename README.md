@@ -1,5 +1,7 @@
 # ts-immutable-struct
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/wkornewald/ts-immutable-struct.svg)](https://greenkeeper.io/)
+
 [![npm version](https://badge.fury.io/js/ts-immutable-struct.svg)](https://badge.fury.io/js/ts-immutable-struct)
 [![NPM downloads](https://img.shields.io/npm/dm/ts-immutable-struct.svg?style=flat)](https://npmjs.org/package/ts-immutable-struct)
 [![Build Status](https://travis-ci.org/wkornewald/ts-immutable-struct.svg?branch=master)](https://travis-ci.org/wkornewald/ts-immutable-struct)
